@@ -1,61 +1,41 @@
 import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
+import math
 # from sklearn.cluster import KMeans
 
 df = pd.read_csv("diabetes.csv")
 print(df.head())
 
-# First we create histogram of each colmun to visualie distribution and potential outliers.
-fig, axes = plt.subplots(2, 4, figsize=(12, 5))
+# First we visualize each column to identify potential outliers in data.
+def plot_histograms(df, columns, bins=50):
+    n = len(columns)
+    n_cols = 4
+    n_rows = math.ceil(n / n_cols)
 
-# Pregnancies
-axes[0][0].hist(df['Pregnancies'], bins=range(df['Pregnancies'].min(), df['Pregnancies'].max() + 2), 
-         edgecolor='black', align='left')
-axes[0][0].set_title('Distribution of Pregnancies')
-axes[0][0].set_xlabel('Number of Pregnancies')
-axes[0][0].set_ylabel('Number of Patients')
+    fig, axes = plt.subplots(n_rows, n_cols, figsize=(12, 5))
+    axes = axes.flatten()
 
-# Glucose
-axes[0][1].hist(df['Glucose'], bins=50, color='skyblue', edgecolor='black')
-axes[0][1].set_title('Distribution of Glucose Levels')
-axes[0][1].set_xlabel('Glucose')
-axes[0][1].set_ylabel('Number of Patients')
+    for i, col in enumerate(columns):
+        axes[i].hist(df[col], bins=bins, color='skyblue', edgecolor='black')
+        axes[i].set_title(f"{col} Distribution")
+        axes[i].set_xlabel(col)
+        axes[i].set_ylabel("Number of Patients")
 
-# BloodPressure
-axes[0][2].hist(df['BloodPressure'], bins=50, color="skyblue", edgecolor="black")
-axes[0][2].set_title("Distribution of BloodPressure levels")
-axes[0][2].set_xlabel("BloodPressure (mmHg)")
-axes[0][2].set_ylabel("Number of Patients")
+    # Turn off any unused axes
+    for j in range(i + 1, len(axes)):
+        axes[j].set_visible(False)
 
-# SkinThickness
-axes[0][3].hist(df['SkinThickness'], bins=50, color="skyblue", edgecolor="black")
-axes[0][3].set_title("Distribution of SkinThickness levels")
-axes[0][3].set_xlabel("SkinThickness (mm)")
-axes[0][3].set_ylabel("Number of Patients")
+    plt.tight_layout()
+    plt.show()
 
-# Insulin
-axes[1][0].hist(df['Insulin'], bins=50, color="skyblue", edgecolor="black")
-axes[1][0].set_title("Distribution of Insulin levels")
-axes[1][0].set_xlabel("Insulin")
-axes[1][0].set_ylabel("Number of Patients")
+plot_histograms(df, ['Pregnancies', 'Glucose', 'BloodPressure', 'SkinThickness', 'Insulin', 'BMI', 'DiabetesPedigreeFunction', 'Age'])
 
-# BMI
-axes[1][1].hist(df['BMI'], bins=50, color="skyblue", edgecolor="black")
-axes[1][1].set_title("Distribution of BMI levels")
-axes[1][1].set_xlabel("BMI")
-axes[1][1].set_ylabel("Number of Patients")
+# Next we handle zero values with median
+# We convert them into NaN first
+zero_value_cols = ['Glucose', "SkinThickness", "BMI", "BloodPressure", "Insulin"]
+df[zero_value_cols] = df[zero_value_cols].replace(0, np.nan)
 
-# DiabetesPedigreeFunction
-axes[1][2].hist(df['DiabetesPedigreeFunction'], bins=50, color="skyblue", edgecolor="black")
-axes[1][2].set_title("Distribution of DiabetesPedigreeFunction levels")
-axes[1][2].set_xlabel("DiabetesPedigreeFunction")
-axes[1][2].set_ylabel("Number of Patients")
-
-# Age
-axes[1][3].hist(df['Age'], bins=50, color="skyblue", edgecolor="black")
-axes[1][3].set_title("Distribution of Age")
-axes[1][3].set_xlabel("Age")
-axes[1][3].set_ylabel("Number of Patients")
-
-plt.tight_layout()
-plt.show()
+# Now we replace NaN with mean
+df.fillna(df.mean(), inplace=True)
+plot_histograms(df, ['Glucose', 'BloodPressure', 'SkinThickness', 'Insulin', 'BMI'])
