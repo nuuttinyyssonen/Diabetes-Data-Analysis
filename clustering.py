@@ -7,7 +7,7 @@ import math
 df = pd.read_csv("diabetes.csv")
 print(df.head())
 
-# First we visualize each column to identify potential outliers in data.
+# First we visualize each column to identify potential outliers and 0 values in data.
 def plot_histograms(df, columns, bins=50):
     n = len(columns)
     n_cols = 4
@@ -39,3 +39,23 @@ df[zero_value_cols] = df[zero_value_cols].replace(0, np.nan)
 # Now we replace NaN with mean
 df.fillna(df.mean(), inplace=True)
 plot_histograms(df, ['Glucose', 'BloodPressure', 'SkinThickness', 'Insulin', 'BMI'])
+
+# Next we identify specific outliers to remove with z-score method
+def detect_outliers_zscore(data):
+    outliers = []
+    thres = 3
+    mean = np.mean(data)
+    std = np.std(data)
+    # print(mean, std)
+    for i in data:
+        z_score = (i-mean)/std
+        if (np.abs(z_score) > thres):
+            outliers.append(i)
+    return outliers
+
+# All outliers removed
+df = df[~df['SkinThickness'].isin(detect_outliers_zscore(df['SkinThickness']))]
+df = df[~df['BloodPressure'].isin(detect_outliers_zscore(df['BloodPressure']))]
+df = df[~df['Insulin'].isin(detect_outliers_zscore(df['Insulin']))]
+df = df[~df['Insulin'].isin(detect_outliers_zscore(df['BMI']))]
+plot_histograms(df, ['SkinThickness', 'BloodPressure', 'Insulin', 'BMI'])
