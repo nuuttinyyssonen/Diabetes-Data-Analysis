@@ -2,7 +2,8 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import math
-# from sklearn.cluster import KMeans
+from sklearn.preprocessing import StandardScaler
+from sklearn.cluster import KMeans
 
 df = pd.read_csv("diabetes.csv")
 print(df.head())
@@ -46,7 +47,6 @@ def detect_outliers_zscore(data):
     thres = 3
     mean = np.mean(data)
     std = np.std(data)
-    # print(mean, std)
     for i in data:
         z_score = (i-mean)/std
         if (np.abs(z_score) > thres):
@@ -59,3 +59,23 @@ df = df[~df['BloodPressure'].isin(detect_outliers_zscore(df['BloodPressure']))]
 df = df[~df['Insulin'].isin(detect_outliers_zscore(df['Insulin']))]
 df = df[~df['BMI'].isin(detect_outliers_zscore(df['BMI']))]
 plot_histograms(df, ['SkinThickness', 'BloodPressure', 'Insulin', 'BMI'])
+
+# Scaling the data before elbow method
+scaler = StandardScaler()
+scaled_data = scaler.fit_transform(df)
+
+# KMeans for a range of cluster numbers and store the inertia (SSE)
+inertia = []
+for k in range(1, 11):
+    kmeans = KMeans(n_clusters=k, random_state=42)
+    kmeans.fit(scaled_data)
+    inertia.append(kmeans.inertia_)
+
+# Plotting elbow curve
+plt.figure(figsize=(8, 5))
+plt.plot(range(1, 11), inertia, marker='o')
+plt.title('Elbow Method for Optimal k')
+plt.xlabel('Number of clusters (k)')
+plt.ylabel('Inertia (SSE)')
+plt.grid(True)
+plt.show()
