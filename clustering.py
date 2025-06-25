@@ -57,5 +57,5 @@ def detect_outliers_zscore(data):
 df = df[~df['SkinThickness'].isin(detect_outliers_zscore(df['SkinThickness']))]
 df = df[~df['BloodPressure'].isin(detect_outliers_zscore(df['BloodPressure']))]
 df = df[~df['Insulin'].isin(detect_outliers_zscore(df['Insulin']))]
-df = df[~df['Insulin'].isin(detect_outliers_zscore(df['BMI']))]
+df = df[~df['BMI'].isin(detect_outliers_zscore(df['BMI']))]
 plot_histograms(df, ['SkinThickness', 'BloodPressure', 'Insulin', 'BMI'])
