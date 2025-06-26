@@ -4,6 +4,9 @@ import matplotlib.pyplot as plt
 import math
 from sklearn.preprocessing import StandardScaler
 from sklearn.cluster import KMeans
+import seaborn as sns
+from sklearn.decomposition import PCA
+from sklearn.metrics import silhouette_score
 
 df = pd.read_csv("diabetes.csv")
 print(df.head())
@@ -38,7 +41,7 @@ zero_value_cols = ['Glucose', "SkinThickness", "BMI", "BloodPressure", "Insulin"
 df[zero_value_cols] = df[zero_value_cols].replace(0, np.nan)
 
 # Now we replace NaN with mean
-df.fillna(df.mean(), inplace=True)
+df.fillna(df.median(), inplace=True)
 plot_histograms(df, ['Glucose', 'BloodPressure', 'SkinThickness', 'Insulin', 'BMI'])
 
 # Next we identify specific outliers to remove with z-score method
@@ -61,8 +64,10 @@ df = df[~df['BMI'].isin(detect_outliers_zscore(df['BMI']))]
 plot_histograms(df, ['SkinThickness', 'BloodPressure', 'Insulin', 'BMI'])
 
 # Scaling the data before elbow method
+data_without_outcome = df.drop(columns=['Outcome'])
+print(data_without_outcome.head())
 scaler = StandardScaler()
-scaled_data = scaler.fit_transform(df)
+scaled_data = scaler.fit_transform(data_without_outcome)
 
 # KMeans for a range of cluster numbers and store the inertia (SSE)
 inertia = []
@@ -79,3 +84,41 @@ plt.xlabel('Number of clusters (k)')
 plt.ylabel('Inertia (SSE)')
 plt.grid(True)
 plt.show()
+
+# Silhouette method to support the decision of clusters
+sil_scores = []
+for k in range(2, 11):
+    kmeans = KMeans(n_clusters=k, random_state=42)
+    labels = kmeans.fit_predict(scaled_data)
+    score = silhouette_score(scaled_data, labels)
+    sil_scores.append(score)
+
+# Plotting the silhouette
+plt.plot(range(2, 11), sil_scores, marker='o')
+plt.xlabel('Number of clusters (k)')
+plt.ylabel('Silhouette Score')
+plt.title('Silhouette Analysis For Optimal k')
+plt.grid(True)
+plt.show()
+
+# KMeans
+kmeans = KMeans(n_clusters=2, random_state=1)
+kmeans.fit(scaled_data)
+labels = kmeans.labels_
+centroids = kmeans.cluster_centers_
+
+df['Cluster'] = labels
+pca = PCA(n_components=2)
+reduced_data = pca.fit_transform(scaled_data)
+centroids_2d = pca.transform(centroids)
+
+plt.scatter(reduced_data[:, 0], reduced_data[:, 1], c=labels, cmap='viridis', alpha=0.6)
+plt.scatter(centroids_2d[:, 0], centroids_2d[:, 1], c='red', marker='X', s=200, label='Centroids')
+plt.title('Patients colored by cluster (PCA projection)')
+plt.xlabel('PCA 1')
+plt.ylabel('PCA 2')
+plt.show()
+
+# Comparing cluster assignments to the outcome variable
+comparison = pd.crosstab(df['Cluster'], df['Outcome'], rownames=['Cluster'], colnames=['Actual Outcome'])
+print(comparison)
