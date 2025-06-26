@@ -4,9 +4,12 @@ import matplotlib.pyplot as plt
 import math
 from sklearn.preprocessing import StandardScaler
 from sklearn.cluster import KMeans
-import seaborn as sns
 from sklearn.decomposition import PCA
 from sklearn.metrics import silhouette_score
+from sklearn.model_selection import train_test_split
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.metrics import accuracy_score
+from sklearn.metrics import classification_report, confusion_matrix
 
 df = pd.read_csv("diabetes.csv")
 print(df.head())
@@ -122,3 +125,34 @@ plt.show()
 # Comparing cluster assignments to the outcome variable
 comparison = pd.crosstab(df['Cluster'], df['Outcome'], rownames=['Cluster'], colnames=['Actual Outcome'])
 print(comparison)
+
+# KNN
+X = df.drop(columns=['Outcome'])
+y = df['Outcome']
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+accuracies = []
+
+for k in range(1, 21):
+    knn = KNeighborsClassifier(n_neighbors=k)
+    knn.fit(X_train, y_train)
+    y_pred = knn.predict(X_test)
+    acc = accuracy_score(y_test, y_pred)
+    accuracies.append(acc)
+
+# Plot accuracy vs k
+plt.plot(range(1, 21), accuracies, marker='o')
+plt.title("KNN Accuracy for different k values")
+plt.xlabel("k (Number of Neighbors)")
+plt.ylabel("Accuracy")
+plt.show()
+
+most_accurate_k = 12
+knn = KNeighborsClassifier(n_neighbors=most_accurate_k)
+knn.fit(X_train, y_train)
+
+y_pred = knn.predict(X_test)
+
+print("Confusion Matrix:\n", confusion_matrix(y_test, y_pred))
+print("\nClassification Report:\n", classification_report(y_test, y_pred))
