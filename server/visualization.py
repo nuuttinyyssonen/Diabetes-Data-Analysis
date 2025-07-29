@@ -1,5 +1,7 @@
 import math
 import matplotlib.pyplot as plt
+import io
+import base64
 
 # We use this to visualize each column to identify potential outliers and 0 values in data.
 def plot_histograms(df, columns, bins=50):
@@ -21,7 +23,13 @@ def plot_histograms(df, columns, bins=50):
         axes[j].set_visible(False)
 
     plt.tight_layout()
-    plt.show()
+    buf = io.BytesIO()
+    plt.savefig(buf, format='png')
+    plt.close()
+    buf.seek(0)
+    image_base64 = base64.b64encode(buf.read()).decode('utf-8')
+    return image_base64
+    # plt.show()
 
 def plot_elbow(inertia):
     plt.figure(figsize=(8, 5))
