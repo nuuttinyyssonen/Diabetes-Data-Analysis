@@ -1,21 +1,25 @@
-
+import { useEffect, useState } from "react";
+import visualizationServices from "./services/visualizationServices";
 
 function App() {
+  const [imageSrc, setImageSrc] = useState(null);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await visualizationServices.getStartingColumns();
+        if(response.image) {
+          setImageSrc(`data:image/png;base64,${response.image}`)
+        }
+      } catch (error) {
+        console.error(error)
+      }
+    }
+    fetchData();
+  }, [])
+
   return (
     <div className="App">
-      <header className="App-header">
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <img src={imageSrc}/>
     </div>
   );
 }
