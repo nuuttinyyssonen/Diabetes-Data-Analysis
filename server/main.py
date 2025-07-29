@@ -11,8 +11,6 @@ import classification as clas
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-import io
-import base64
 
 app = FastAPI()
 
@@ -28,14 +26,43 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-df = pd.read_csv("diabetes.csv")
-print(df.head())
+orig_df = pd.read_csv("diabetes.csv")
+print(orig_df.head())
 
-@app.get('/columns')
+@app.get('/startingColumns')
 def get_starting_columns():
-    image_base64 = viz.plot_histograms(df, ['Pregnancies', 'Glucose', 'BloodPressure', 'SkinThickness', 'Insulin', 'BMI', 'DiabetesPedigreeFunction', 'Age'])
-    return JSONResponse(content={"image": image_base64})
+    try:
+        image_base64 = viz.plot_histograms(orig_df, ['Pregnancies', 'Glucose', 'BloodPressure', 'SkinThickness', 'Insulin', 'BMI', 'DiabetesPedigreeFunction', 'Age'])
+        return JSONResponse(content={"image": image_base64})
+    except Exception as e:
+        print("Error in /startingColumns:", e)
+        return JSONResponse(content={"error": str(e)}, status_code=500)
 
+@app.get('/zeroValuesRemoved')
+def zeroValuesRemoved():
+    try:
+        df_without_zeros = dp.handle_zeros(orig_df.copy())
+        image_base64 = viz.plot_histograms(df_without_zeros, ['Glucose', 'BloodPressure', 'SkinThickness', 'Insulin', 'BMI'])
+        return JSONResponse(content={"image": image_base64})
+    except Exception as e:
+        print("Error in /zeroValuesRemoved:", e)
+        return JSONResponse(content={"error": str(e)}, status_code=500)
+
+@app.get('/outliersRemoved')
+def outliersRemoved():
+    try:
+        # Remove outliers from the specified columns
+        new_df = dp.handle_zeros(orig_df.copy())
+        new_df = new_df[~new_df['SkinThickness'].isin(dp.detect_outliers_zscore(new_df['SkinThickness']))]
+        new_df = new_df[~new_df['BloodPressure'].isin(dp.detect_outliers_zscore(new_df['BloodPressure']))]
+        new_df = new_df[~new_df['Insulin'].isin(dp.detect_outliers_zscore(new_df['Insulin']))]
+        new_df = new_df[~new_df['BMI'].isin(dp.detect_outliers_zscore(new_df['BMI']))]
+        image_base64 = viz.plot_histograms(new_df, ['SkinThickness', 'BloodPressure', 'Insulin', 'BMI'])
+        return JSONResponse(content={"image": image_base64})
+    except Exception as e:
+        print("Error in /outliersRemoved:", e)
+        return JSONResponse(content={"error": str(e)}, status_code=500)
+    
 
 # # Visualizing columns
 # viz.plot_histograms(df, ['Pregnancies', 'Glucose', 'BloodPressure', 'SkinThickness', 'Insulin', 'BMI', 'DiabetesPedigreeFunction', 'Age'])

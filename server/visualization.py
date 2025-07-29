@@ -1,4 +1,6 @@
 import math
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import io
 import base64
@@ -29,7 +31,6 @@ def plot_histograms(df, columns, bins=50):
     buf.seek(0)
     image_base64 = base64.b64encode(buf.read()).decode('utf-8')
     return image_base64
-    # plt.show()
 
 def plot_elbow(inertia):
     plt.figure(figsize=(8, 5))
