@@ -27,10 +27,16 @@ const getSilhouetteScorePlot = async () => {
     return response.data;
 }
 
+const getKmeansPlot = async () => {
+    const response = await axios.get(`${baseUrl}/kmeansPlot`);
+    return response.data;
+}
+
 export default {
     getStartingColumns,
     getColumnsWithoutZeros,
     getColumnsWithoutOutliers,
     getElbowMethodPlot,
-    getSilhouetteScorePlot
+    getSilhouetteScorePlot,
+    getKmeansPlot
 }

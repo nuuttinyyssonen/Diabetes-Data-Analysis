@@ -26,8 +26,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+def get_cleaned_df():
+    df = dp.handle_zeros(orig_df.copy())
+    df = df[~df['SkinThickness'].isin(dp.detect_outliers_zscore(df['SkinThickness']))]
+    df = df[~df['BloodPressure'].isin(dp.detect_outliers_zscore(df['BloodPressure']))]
+    df = df[~df['Insulin'].isin(dp.detect_outliers_zscore(df['Insulin']))]
+    df = df[~df['BMI'].isin(dp.detect_outliers_zscore(df['BMI']))]
+    return df
+
 orig_df = pd.read_csv("diabetes.csv")
-modified_df = dp.handle_zeros(orig_df.copy())
 print(orig_df.head())
 
 @app.get('/startingColumns')
@@ -42,8 +49,8 @@ def get_starting_columns():
 @app.get('/zeroValuesRemoved')
 def zeroValuesRemoved():
     try:
-        df_without_zeros = modified_df.copy()
-        image_base64 = viz.plot_histograms(df_without_zeros, ['Glucose', 'BloodPressure', 'SkinThickness', 'Insulin', 'BMI'])
+        df = dp.handle_zeros(orig_df.copy())
+        image_base64 = viz.plot_histograms(df, ['Glucose', 'BloodPressure', 'SkinThickness', 'Insulin', 'BMI'])
         return JSONResponse(content={"image": image_base64})
     except Exception as e:
         print("Error in /zeroValuesRemoved:", e)
@@ -52,11 +59,7 @@ def zeroValuesRemoved():
 @app.get('/outliersRemoved')
 def outliersRemoved():
     try:
-        df = dp.handle_zeros(orig_df.copy(deep=True))  # remove zeros first
-        df = df[~df['SkinThickness'].isin(dp.detect_outliers_zscore(df['SkinThickness']))]
-        df = df[~df['BloodPressure'].isin(dp.detect_outliers_zscore(df['BloodPressure']))]
-        df = df[~df['Insulin'].isin(dp.detect_outliers_zscore(df['Insulin']))]
-        df = df[~df['BMI'].isin(dp.detect_outliers_zscore(df['BMI']))]
+        df = get_cleaned_df()
         image_base64 = viz.plot_histograms(df, ['SkinThickness', 'BloodPressure', 'Insulin', 'BMI'])
         return JSONResponse(content={"image": image_base64})
     except Exception as e:
@@ -67,8 +70,8 @@ def outliersRemoved():
 @app.get('/elbowMethod')
 def get_elbow_method():
     try:
-        df_without_zeros = dp.handle_zeros(orig_df.copy())
-        scaled_data = dp.data_scale(df_without_zeros)
+        df = get_cleaned_df()
+        scaled_data = dp.data_scale(df)
         inertia = clus.get_inertia(scaled_data)
         image_base64 = viz.plot_elbow(inertia)
         return JSONResponse(content={"image": image_base64})
@@ -79,8 +82,8 @@ def get_elbow_method():
 @app.get('/silhouetteScores')
 def get_silhouette_scores():
     try:
-        df_without_zeros = dp.handle_zeros(orig_df.copy())
-        scaled_data = dp.data_scale(df_without_zeros)
+        df = get_cleaned_df()
+        scaled_data = dp.data_scale(df)
         sil_scores = clus.get_sil_scores(scaled_data)
         image_base64 = viz.plot_silhouette(sil_scores)
         return JSONResponse(content={"image": image_base64})
@@ -88,16 +91,21 @@ def get_silhouette_scores():
         print("Error in /silhouetteScores")
         return JSONResponse(content={"error": str(e)}, status_code=500)
 
-
 # # KMeans
-# labels, centroids = clus.run_Kmeans(scaled_data)
-# df['Cluster'] = labels
-# pca = PCA(n_components=2)
-# reduced_data = pca.fit_transform(scaled_data)
-# centroids_2d = pca.transform(centroids)
-
-# # Plotting clusters
-# viz.plot_clusters(reduced_data, centroids_2d, labels)
+@app.get('/kmeansPlot')
+def getKmeansPlot():
+    try:
+        df = get_cleaned_df()
+        scaled_data = dp.data_scale(df)
+        labels, centroids = clus.run_Kmeans(scaled_data)
+        pca = PCA(n_components=2)
+        reduced_data = pca.fit_transform(scaled_data)
+        centroids_2d = pca.transform(centroids)
+        images_base64 = viz.plot_clusters(reduced_data, centroids_2d, labels)
+        return JSONResponse(content={"image": images_base64})
+    except Exception as e:
+        print("Error in /kmeansPlot")
+        return JSONResponse(content={"error": str(e)}, status_code=500)
 
 # # Comparing cluster assignments to the outcome variable
 # comparison = pd.crosstab(df['Cluster'], df['Outcome'], rownames=['Cluster'], colnames=['Actual Outcome'])

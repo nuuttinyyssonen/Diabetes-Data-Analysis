@@ -68,12 +68,19 @@ def plot_silhouette(sil_scores):
         return image_base64
 
 def plot_clusters(reduced_data, centroids_2d, labels):
-    plt.scatter(reduced_data[:, 0], reduced_data[:, 1], c=labels, cmap='viridis', alpha=0.6)
-    plt.scatter(centroids_2d[:, 0], centroids_2d[:, 1], c='red', marker='X', s=200, label='Centroids')
-    plt.title('Patients colored by cluster (PCA projection)')
-    plt.xlabel('PCA 1')
-    plt.ylabel('PCA 2')
-    plt.show()
+    with plot_lock:
+        plt.scatter(reduced_data[:, 0], reduced_data[:, 1], c=labels, cmap='viridis', alpha=0.6)
+        plt.scatter(centroids_2d[:, 0], centroids_2d[:, 1], c='red', marker='X', s=200, label='Centroids')
+        plt.title('Patients colored by cluster (PCA projection)')
+        plt.xlabel('PCA 1')
+        plt.ylabel('PCA 2')
+        plt.tight_layout()
+        buf = io.BytesIO()
+        plt.savefig(buf, format='png')
+        plt.close()
+        buf.seek(0)
+        image_base64 = base64.b64encode(buf.read()).decode('utf-8')
+        return image_base64
 
 def plot_knn(accuracies):
     plt.plot(range(1, 21), accuracies, marker='o')
