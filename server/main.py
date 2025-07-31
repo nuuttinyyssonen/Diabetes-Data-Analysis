@@ -27,6 +27,7 @@ app.add_middleware(
 )
 
 orig_df = pd.read_csv("diabetes.csv")
+modified_df = dp.handle_zeros(orig_df.copy())
 print(orig_df.head())
 
 @app.get('/startingColumns')
@@ -41,7 +42,7 @@ def get_starting_columns():
 @app.get('/zeroValuesRemoved')
 def zeroValuesRemoved():
     try:
-        df_without_zeros = dp.handle_zeros(orig_df.copy())
+        df_without_zeros = modified_df.copy()
         image_base64 = viz.plot_histograms(df_without_zeros, ['Glucose', 'BloodPressure', 'SkinThickness', 'Insulin', 'BMI'])
         return JSONResponse(content={"image": image_base64})
     except Exception as e:
@@ -51,43 +52,42 @@ def zeroValuesRemoved():
 @app.get('/outliersRemoved')
 def outliersRemoved():
     try:
-        # Remove outliers from the specified columns
-        new_df = dp.handle_zeros(orig_df.copy())
-        new_df = new_df[~new_df['SkinThickness'].isin(dp.detect_outliers_zscore(new_df['SkinThickness']))]
-        new_df = new_df[~new_df['BloodPressure'].isin(dp.detect_outliers_zscore(new_df['BloodPressure']))]
-        new_df = new_df[~new_df['Insulin'].isin(dp.detect_outliers_zscore(new_df['Insulin']))]
-        new_df = new_df[~new_df['BMI'].isin(dp.detect_outliers_zscore(new_df['BMI']))]
-        image_base64 = viz.plot_histograms(new_df, ['SkinThickness', 'BloodPressure', 'Insulin', 'BMI'])
+        df = dp.handle_zeros(orig_df.copy(deep=True))  # remove zeros first
+        df = df[~df['SkinThickness'].isin(dp.detect_outliers_zscore(df['SkinThickness']))]
+        df = df[~df['BloodPressure'].isin(dp.detect_outliers_zscore(df['BloodPressure']))]
+        df = df[~df['Insulin'].isin(dp.detect_outliers_zscore(df['Insulin']))]
+        df = df[~df['BMI'].isin(dp.detect_outliers_zscore(df['BMI']))]
+        image_base64 = viz.plot_histograms(df, ['SkinThickness', 'BloodPressure', 'Insulin', 'BMI'])
         return JSONResponse(content={"image": image_base64})
     except Exception as e:
         print("Error in /outliersRemoved:", e)
         return JSONResponse(content={"error": str(e)}, status_code=500)
-    
 
-# # Visualizing columns
-# viz.plot_histograms(df, ['Pregnancies', 'Glucose', 'BloodPressure', 'SkinThickness', 'Insulin', 'BMI', 'DiabetesPedigreeFunction', 'Age'])
 
-# # Next we handle zero values with median
-# df = dp.handle_zeros(df)
-# viz.plot_histograms(df, ['Glucose', 'BloodPressure', 'SkinThickness', 'Insulin', 'BMI'])
+@app.get('/elbowMethod')
+def get_elbow_method():
+    try:
+        df_without_zeros = dp.handle_zeros(orig_df.copy())
+        scaled_data = dp.data_scale(df_without_zeros)
+        inertia = clus.get_inertia(scaled_data)
+        image_base64 = viz.plot_elbow(inertia)
+        return JSONResponse(content={"image": image_base64})
+    except Exception as e:
+        print("Error in /elbowMethod:", e)
+        return JSONResponse(content={"error": str(e)}, status_code=500)
 
-# # All outliers removed
-# df = df[~df['SkinThickness'].isin(dp.detect_outliers_zscore(df['SkinThickness']))]
-# df = df[~df['BloodPressure'].isin(dp.detect_outliers_zscore(df['BloodPressure']))]
-# df = df[~df['Insulin'].isin(dp.detect_outliers_zscore(df['Insulin']))]
-# df = df[~df['BMI'].isin(dp.detect_outliers_zscore(df['BMI']))]
-# viz.plot_histograms(df, ['SkinThickness', 'BloodPressure', 'Insulin', 'BMI'])
+@app.get('/silhouetteScores')
+def get_silhouette_scores():
+    try:
+        df_without_zeros = dp.handle_zeros(orig_df.copy())
+        scaled_data = dp.data_scale(df_without_zeros)
+        sil_scores = clus.get_sil_scores(scaled_data)
+        image_base64 = viz.plot_silhouette(sil_scores)
+        return JSONResponse(content={"image": image_base64})
+    except Exception as e:
+        print("Error in /silhouetteScores")
+        return JSONResponse(content={"error": str(e)}, status_code=500)
 
-# # Scaling the data before elbow method
-# scaled_data = dp.data_scale(df)
-
-# # Elbow method
-# intertia = clus.get_inertia(scaled_data)
-# viz.plot_elbow(intertia)
-
-# # Silhouette method to support the decision of clusters
-# sil_scores = clus.get_sil_scores(scaled_data)
-# viz.plot_silhouette(sil_scores)
 
 # # KMeans
 # labels, centroids = clus.run_Kmeans(scaled_data)
