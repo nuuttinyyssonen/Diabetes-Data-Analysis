@@ -108,11 +108,40 @@ def getKmeansPlot():
         return JSONResponse(content={"error": str(e)}, status_code=500)
 
 # # Comparing cluster assignments to the outcome variable
-# comparison = pd.crosstab(df['Cluster'], df['Outcome'], rownames=['Cluster'], colnames=['Actual Outcome'])
+# comparison = pd.crosstab(orig_df['Cluster'], orig_df['Outcome'], rownames=['Cluster'], colnames=['Actual Outcome'])
 # print(comparison)
 
 # # KNN
-# accuracies, X_train, X_test, y_train, y_test = clas.run_knn(df)
+@app.get('/KNN')
+def getKNN():
+    try:
+        df = get_cleaned_df()
+        X = df.drop(columns=['Outcome'])
+        y = df['Outcome']
+        X_scaled_data = dp.data_scale(df)
+        accuracies, X_train, X_test, y_train, y_test = clas.run_knn(X_scaled_data, y)
+
+        # Training final model with best k
+        best_k = 1 + accuracies.index(max(accuracies))
+        knn = KNeighborsClassifier(n_neighbors=best_k)
+        knn.fit(X_train, y_train)
+        y_pred = knn.predict(X_test)
+
+        # Convert to list for JSON serialization
+        y_pred_list = y_pred.tolist()
+        y_test_list = y_test.tolist()
+
+        # Base64 image
+        image_base64 = viz.plot_knn(accuracies)
+        return JSONResponse(content={
+            'image': image_base64,
+            'y_pred': y_pred_list,
+            'y_test': y_test_list
+        })
+    except Exception as e:
+        print("Error in KNN")
+        return JSONResponse(content={'message': str(e)}, status_code=500)
+    
 
 # # Plot accuracy vs k
 # viz.plot_knn(accuracies)

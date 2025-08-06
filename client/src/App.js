@@ -9,19 +9,24 @@ function App() {
     columnsWithoutOutliers: null,
     elbowMethodPlot: null,
     silhouetteScoresPlot: null,
-    kmeansPlot: null
+    kmeansPlot: null,
+    KNN: null
   });
+
+  const [predictions, setPredictions] = useState([]);
+  const [yTest, setYTest] = useState([]);
 
   useEffect(() => {
     const fetchImages = async () => {
       try {
-        const [starting, zeros, outliers, elbow, silhouetteScores, kmeans] = await Promise.all([
+        const [starting, zeros, outliers, elbow, silhouetteScores, kmeans, KNN] = await Promise.all([
         visualizationServices.getStartingColumns(),
         visualizationServices.getColumnsWithoutZeros(),
         visualizationServices.getColumnsWithoutOutliers(),
         visualizationServices.getElbowMethodPlot(),
         visualizationServices.getSilhouetteScorePlot(),
-        visualizationServices.getKmeansPlot()
+        visualizationServices.getKmeansPlot(),
+        visualizationServices.getKNN()
       ]);
       setImages({
         startingColumns: starting.image ? `data:image/png;base64,${starting.image}` : null,
@@ -29,15 +34,21 @@ function App() {
         columnsWithoutOutliers: outliers.image ? `data:image/png;base64,${outliers.image}` : null,
         elbowMethodPlot: elbow.image ? `data:image/png;base64,${elbow.image}` : null,
         silhouetteScoresPlot: silhouetteScores.image ? `data:image/png;base64,${silhouetteScores.image}` : null,
-        kmeansPlot: kmeans.image ? `data:image/png;base64,${kmeans.image}` : null
+        kmeansPlot: kmeans.image ? `data:image/png;base64,${kmeans.image}` : null,
+        KNN: KNN.image ? `data:image/png;base64,${KNN.image}` : null,
 
       });
+      setPredictions(KNN.y_pred);
+      setYTest(KNN.y_test);
       } catch (error) {
         console.error("Error fetching images:", error);
       }
     };
     fetchImages();
   }, []);
+
+  const correct = predictions.filter((pred, idx) => pred === yTest[idx]).length;
+  const accuracy = yTest.length > 0 ? (correct / yTest.length * 100).toFixed(2) : null;
 
   return (
     <div className="App">
@@ -71,6 +82,17 @@ function App() {
           ? <img src={images.kmeansPlot} alt="Elbow Method Plot" />
           : <div>Loading Elbow Method Plot...</div>}
       </div>
+      <div>
+        {images.KNN
+          ? <img src={images.KNN} alt="Elbow Method Plot" />
+          : <div>Loading Elbow Method Plot...</div>}
+      </div>
+      <h2>KNN Predictions (Test Set)</h2>
+      <ul>
+        {predictions.map((pred, idx) => (
+          <li key={idx}>Sample {idx + 1}: {pred}</li>
+        ))}
+      </ul>
     </div>
   );
 }

@@ -83,8 +83,15 @@ def plot_clusters(reduced_data, centroids_2d, labels):
         return image_base64
 
 def plot_knn(accuracies):
-    plt.plot(range(1, 21), accuracies, marker='o')
-    plt.title("KNN Accuracy for different k values")
-    plt.xlabel("k (Number of Neighbors)")
-    plt.ylabel("Accuracy")
-    plt.show()
+    with plot_lock:
+        plt.plot(range(1, 21), accuracies, marker='o')
+        plt.title("KNN Accuracy for different k values")
+        plt.xlabel("k (Number of Neighbors)")
+        plt.ylabel("Accuracy")
+        plt.tight_layout()
+        buf = io.BytesIO()
+        plt.savefig(buf, format='png')
+        plt.close()
+        buf.seek(0)
+        image_base64 = base64.b64encode(buf.read()).decode('utf-8')
+        return image_base64

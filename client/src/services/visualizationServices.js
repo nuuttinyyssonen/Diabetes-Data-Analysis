@@ -32,11 +32,17 @@ const getKmeansPlot = async () => {
     return response.data;
 }
 
+const getKNN = async () => {
+    const response = await axios.get(`${baseUrl}/KNN`);
+    return response.data;
+}
+
 export default {
     getStartingColumns,
     getColumnsWithoutZeros,
     getColumnsWithoutOutliers,
     getElbowMethodPlot,
     getSilhouetteScorePlot,
-    getKmeansPlot
+    getKmeansPlot,
+    getKNN
 }
