@@ -76,7 +76,15 @@ def correlationHeatMap():
         print("Error in /zeroValuesRemoved:", e)
         return JSONResponse(content={"error": str(e)}, status_code=500)
 
-
+@app.get('/outcomeDistribution')
+def outcomeDistribution():
+    try:
+        df = orig_df.copy()
+        image_base64 = viz.plot_outcome_distribution(df)
+        return JSONResponse(content={"image": image_base64})
+    except Exception as e:
+        print("Error in /outcomeDistribution:", e)
+        return JSONResponse(content={"error": str(e)}, status_code=500)
 
 @app.get('/elbowMethod')
 def get_elbow_method():
@@ -102,7 +110,7 @@ def get_silhouette_scores():
         print("Error in /silhouetteScores")
         return JSONResponse(content={"error": str(e)}, status_code=500)
 
-# # KMeans
+# KMeans
 @app.get('/kmeansPlot')
 def getKmeansPlot():
     try:
@@ -149,30 +157,14 @@ def getKNN():
         knn.fit(X_train, y_train)
         y_pred = knn.predict(X_test)
 
-        # Convert to list for JSON serialization
-        y_pred_list = y_pred.tolist()
-        y_test_list = y_test.tolist()
-
         # Base64 image
         image_base64 = viz.plot_knn(accuracies)
+        cm_image_base64 = viz.plot_confusion_matrix(y_test, y_pred)
         return JSONResponse(content={
             'image': image_base64,
-            'y_pred': y_pred_list,
-            'y_test': y_test_list
+            'confusion_matrix': cm_image_base64
         })
     except Exception as e:
         print("Error in KNN")
         return JSONResponse(content={'message': str(e)}, status_code=500)
     
-
-# # Plot accuracy vs k
-# viz.plot_knn(accuracies)
-
-# most_accurate_k = 12
-# knn = KNeighborsClassifier(n_neighbors=most_accurate_k)
-# knn.fit(X_train, y_train)
-
-# y_pred = knn.predict(X_test)
-
-# print("Confusion Matrix:\n", confusion_matrix(y_test, y_pred))
-# print("\nClassification Report:\n", classification_report(y_test, y_pred))

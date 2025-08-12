@@ -47,6 +47,11 @@ const getCorrelationsHeatMap = async () => {
     return response.data;
 }
 
+const getOutcomeDistribution = async () => {
+    const response = await axios.get(`${baseUrl}/outcomeDistribution`);
+    return response.data;
+}
+
 export default {
     getStartingColumns,
     getColumnsWithoutZeros,
@@ -56,5 +61,6 @@ export default {
     getKmeansPlot,
     getKNN,
     getHeatMap,
-    getCorrelationsHeatMap
+    getCorrelationsHeatMap,
+    getOutcomeDistribution
 }

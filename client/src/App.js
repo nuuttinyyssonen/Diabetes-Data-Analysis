@@ -16,9 +16,9 @@ function App() {
     <div className="App">
       <nav className='navbar'>
         <span className="nav-link" onClick={() => handleClick('')}>Data Overview Plots</span>
+        <span className="nav-link" onClick={() => handleClick('DataExploration')}>Data Exploration</span>
         <span className="nav-link" onClick={() => handleClick('ClusterEvalPlots')}>Cluster Evalutaion Plots</span>
         <span className="nav-link" onClick={() => handleClick('ClusterClassPlots')}>Clustering And Classification Plots</span>
-        <span className="nav-link" onClick={() => handleClick('DataExploration')}>Data Exploration</span>
       </nav>
       <Routes>
         <Route path='/' element={<DataOverviewPlots images={images} />} />

@@ -6,6 +6,7 @@ import io
 import base64
 import threading
 import seaborn as sns
+from sklearn.metrics import confusion_matrix
 
 plot_lock = threading.Lock()
 
@@ -120,6 +121,38 @@ def plot_correlation_heatmap(df):
         sns.heatmap(corr, annot=True, fmt=".2f", cmap='coolwarm', square=True)
         plt.title('Correlation Heatmap of Input Variables')
         plt.tight_layout()
+        buf = io.BytesIO()
+        plt.savefig(buf, format='png')
+        plt.close()
+        buf.seek(0)
+        image_base64 = base64.b64encode(buf.read()).decode('utf-8')
+        return image_base64
+    
+def plot_outcome_distribution(df):
+    with plot_lock:
+        plt.figure(figsize=(5, 4))
+        outcome_counts = df['Outcome'].value_counts().sort_index()
+        sns.barplot(x=outcome_counts.index, y=outcome_counts.values, palette='Set2')
+        plt.xlabel('Outcome')
+        plt.ylabel('Count')
+        plt.title('Distribution of Outcome Variable')
+        plt.xticks([0, 1], ['No Diabetes', 'Diabetes'])
+        plt.tight_layout()
+        buf = io.BytesIO()
+        plt.savefig(buf, format='png')
+        plt.close()
+        buf.seek(0)
+        image_base64 = base64.b64encode(buf.read()).decode('utf-8')
+        return image_base64
+    
+def plot_confusion_matrix(y_true, y_pred):
+    with plot_lock:
+        cm = confusion_matrix(y_true, y_pred)
+        plt.figure(figsize=(5, 4))
+        sns.heatmap(cm, annot=True, fmt='d', cmap='Blues')
+        plt.xlabel('Predicted')
+        plt.ylabel('Actual')
+        plt.title('KNN Confusion Matrix')
         buf = io.BytesIO()
         plt.savefig(buf, format='png')
         plt.close()

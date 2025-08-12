@@ -11,13 +11,25 @@ const usePlots = () => {
     kmeansPlot: null,
     KNN: null,
     heatMap: null,
-    correlationHeatMap: null
+    correlationHeatMap: null,
+    outcomeDistribution: null,
+    confusionMatrix: null
   });
 
     useEffect(() => {
         const fetchImages = async () => {
         try {
-          const [starting, zeros, outliers, elbow, silhouetteScores, kmeans, KNN, heatMap, correlationHeatMap] = await Promise.all([
+          const [starting, 
+            zeros, 
+            outliers, 
+            elbow, 
+            silhouetteScores, 
+            kmeans, 
+            KNN,
+            heatMap, 
+            correlationHeatMap, 
+            outcomeDistribution
+          ] = await Promise.all([
           visualizationServices.getStartingColumns(),
           visualizationServices.getColumnsWithoutZeros(),
           visualizationServices.getColumnsWithoutOutliers(),
@@ -26,7 +38,8 @@ const usePlots = () => {
           visualizationServices.getKmeansPlot(),
           visualizationServices.getKNN(),
           visualizationServices.getHeatMap(),
-          visualizationServices.getCorrelationsHeatMap()
+          visualizationServices.getCorrelationsHeatMap(),
+          visualizationServices.getOutcomeDistribution()
         ]);
         setImages({
           startingColumns: starting.image ? `data:image/png;base64,${starting.image}` : null,
@@ -36,8 +49,10 @@ const usePlots = () => {
           silhouetteScoresPlot: silhouetteScores.image ? `data:image/png;base64,${silhouetteScores.image}` : null,
           kmeansPlot: kmeans.image ? `data:image/png;base64,${kmeans.image}` : null,
           KNN: KNN.image ? `data:image/png;base64,${KNN.image}` : null,
+          confusionMatrix: KNN.confusion_matrix ? `data:image/png;base64,${KNN.confusion_matrix}` : null,
           heatMap: heatMap.image ? `data:image/png;base64,${heatMap.image}` : null,
-          correlationHeatMap: correlationHeatMap.image ? `data:image/png;base64,${correlationHeatMap.image}` : null
+          correlationHeatMap: correlationHeatMap.image ? `data:image/png;base64,${correlationHeatMap.image}` : null,
+          outcomeDistribution: outcomeDistribution.image ? `data:image/png;base64,${outcomeDistribution.image}` : null
         });
         } catch (error) {
           console.error("Error fetching images:", error);
