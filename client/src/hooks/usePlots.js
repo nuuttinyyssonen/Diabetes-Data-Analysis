@@ -30,16 +30,16 @@ const usePlots = () => {
             correlationHeatMap, 
             outcomeDistribution
           ] = await Promise.all([
-          visualizationServices.getStartingColumns(),
-          visualizationServices.getColumnsWithoutZeros(),
-          visualizationServices.getColumnsWithoutOutliers(),
-          visualizationServices.getElbowMethodPlot(),
-          visualizationServices.getSilhouetteScorePlot(),
-          visualizationServices.getKmeansPlot(),
-          visualizationServices.getKNN(),
-          visualizationServices.getHeatMap(),
-          visualizationServices.getCorrelationsHeatMap(),
-          visualizationServices.getOutcomeDistribution()
+          visualizationServices.getData('startingColumns'),
+          visualizationServices.getData('zeroValuesRemoved'),
+          visualizationServices.getData('outliersRemoved'),
+          visualizationServices.getData('elbowMethod'),
+          visualizationServices.getData('silhouetteScores'),
+          visualizationServices.getData('kmeansPlot'),
+          visualizationServices.getData('KNN'),
+          visualizationServices.getData('clusterOutcomeHeatmap'),
+          visualizationServices.getData('correlationHeatMap'),
+          visualizationServices.getData('outcomeDistribution')
         ]);
         setImages({
           startingColumns: starting.image ? `data:image/png;base64,${starting.image}` : null,
