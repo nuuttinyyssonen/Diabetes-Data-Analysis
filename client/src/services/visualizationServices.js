@@ -37,6 +37,16 @@ const getKNN = async () => {
     return response.data;
 }
 
+const getHeatMap = async () => {
+    const response = await axios.get(`${baseUrl}/clusterOutcomeHeatmap`);
+    return response.data;
+}
+
+const getCorrelationsHeatMap = async () => {
+    const response = await axios.get(`${baseUrl}/correlationHeatMap`);
+    return response.data;
+}
+
 export default {
     getStartingColumns,
     getColumnsWithoutZeros,
@@ -44,5 +54,7 @@ export default {
     getElbowMethodPlot,
     getSilhouetteScorePlot,
     getKmeansPlot,
-    getKNN
+    getKNN,
+    getHeatMap,
+    getCorrelationsHeatMap
 }

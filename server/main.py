@@ -65,6 +65,17 @@ def outliersRemoved():
     except Exception as e:
         print("Error in /outliersRemoved:", e)
         return JSONResponse(content={"error": str(e)}, status_code=500)
+    
+@app.get('/correlationHeatMap')
+def correlationHeatMap():
+    try:
+        df = get_cleaned_df()
+        image_base64 = viz.plot_correlation_heatmap(df)
+        return JSONResponse(content={"image": image_base64})
+    except Exception as e:
+        print("Error in /zeroValuesRemoved:", e)
+        return JSONResponse(content={"error": str(e)}, status_code=500)
+
 
 
 @app.get('/elbowMethod')
@@ -106,12 +117,23 @@ def getKmeansPlot():
     except Exception as e:
         print("Error in /kmeansPlot")
         return JSONResponse(content={"error": str(e)}, status_code=500)
+    
+@app.get('/clusterOutcomeHeatmap')
+def cluster_outcome_heatmap():
+    try:
+        df = get_cleaned_df()
+        scaled_data = dp.data_scale(df)
+        labels, _ = clus.run_Kmeans(scaled_data)
+        df = df.copy()
+        df['Cluster'] = labels + 1
+        ct = pd.crosstab(df['Cluster'], df['Outcome'], rownames=['Cluster'], colnames=['Actual Outcome'])
+        image_base64 = viz.plot_heatmap(ct)
+        return JSONResponse(content={"image": image_base64})
+    except Exception as e:
+        print("Error in /clusterOutcomeHeatmap:", e)
+        return JSONResponse(content={"error": str(e)}, status_code=500)
 
-# # Comparing cluster assignments to the outcome variable
-# comparison = pd.crosstab(orig_df['Cluster'], orig_df['Outcome'], rownames=['Cluster'], colnames=['Actual Outcome'])
-# print(comparison)
-
-# # KNN
+# KNN
 @app.get('/KNN')
 def getKNN():
     try:

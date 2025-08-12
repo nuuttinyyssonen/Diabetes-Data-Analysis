@@ -9,20 +9,24 @@ const usePlots = () => {
     elbowMethodPlot: null,
     silhouetteScoresPlot: null,
     kmeansPlot: null,
-    KNN: null
+    KNN: null,
+    heatMap: null,
+    correlationHeatMap: null
   });
 
     useEffect(() => {
         const fetchImages = async () => {
         try {
-          const [starting, zeros, outliers, elbow, silhouetteScores, kmeans, KNN] = await Promise.all([
+          const [starting, zeros, outliers, elbow, silhouetteScores, kmeans, KNN, heatMap, correlationHeatMap] = await Promise.all([
           visualizationServices.getStartingColumns(),
           visualizationServices.getColumnsWithoutZeros(),
           visualizationServices.getColumnsWithoutOutliers(),
           visualizationServices.getElbowMethodPlot(),
           visualizationServices.getSilhouetteScorePlot(),
           visualizationServices.getKmeansPlot(),
-          visualizationServices.getKNN()
+          visualizationServices.getKNN(),
+          visualizationServices.getHeatMap(),
+          visualizationServices.getCorrelationsHeatMap()
         ]);
         setImages({
           startingColumns: starting.image ? `data:image/png;base64,${starting.image}` : null,
@@ -32,6 +36,8 @@ const usePlots = () => {
           silhouetteScoresPlot: silhouetteScores.image ? `data:image/png;base64,${silhouetteScores.image}` : null,
           kmeansPlot: kmeans.image ? `data:image/png;base64,${kmeans.image}` : null,
           KNN: KNN.image ? `data:image/png;base64,${KNN.image}` : null,
+          heatMap: heatMap.image ? `data:image/png;base64,${heatMap.image}` : null,
+          correlationHeatMap: correlationHeatMap.image ? `data:image/png;base64,${correlationHeatMap.image}` : null
         });
         } catch (error) {
           console.error("Error fetching images:", error);

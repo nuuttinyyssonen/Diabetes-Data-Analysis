@@ -8,7 +8,17 @@ const ClusterClassPlots = ({ images }) => {
                   This plot shows the results of KMeans clustering on the dataset, with data points and cluster centroids visualized after dimensionality reduction.
                 </p>
                 {images.kmeansPlot
-                ? <img src={images.kmeansPlot} alt="Elbow Method Plot" />
+                ? <img src={images.kmeansPlot} alt="Kmeans Plot" />
+                : <div>Loading kmenas Plot...</div>}
+            </div>
+            <div className="plot-box">
+                <p>
+                  <strong>HeatMap of Cluster Assignments vs Outcome</strong><br />
+                  This HeatMap shows the distribution of outcome variable (people with diabetes 1 and people without diabetes 0)
+                  in 2 different clusters.
+                </p>
+                {images.heatMap
+                ? <img src={images.heatMap} alt="heatMap Plot" />
                 : <div>Loading kmenas Plot...</div>}
             </div>
             <div className="plot-box">
@@ -17,7 +27,7 @@ const ClusterClassPlots = ({ images }) => {
                   This plot displays the classification accuracy of the K-Nearest Neighbors algorithm for different values of k, helping to identify the optimal number of neighbors for prediction.
                 </p>
                 {images.KNN
-                ? <img src={images.KNN} alt="Elbow Method Plot" />
+                ? <img src={images.KNN} alt="KNN Plot" />
                 : <div>Loading KNN Plot...</div>}
             </div>
         </div>

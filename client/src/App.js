@@ -4,6 +4,7 @@ import ClusterEvalPlots from './components/ClusterEvalPlots';
 import usePlots from './hooks/usePlots';
 import DataOverviewPlots from './components/DataOverviewPlots';
 import ClusterClassPlots from './components/ClusterClassPlots';
+import DataExploration from './components/DataExploration';
 
 function App() {
   const navigate = useNavigate();
@@ -17,11 +18,13 @@ function App() {
         <span className="nav-link" onClick={() => handleClick('')}>Data Overview Plots</span>
         <span className="nav-link" onClick={() => handleClick('ClusterEvalPlots')}>Cluster Evalutaion Plots</span>
         <span className="nav-link" onClick={() => handleClick('ClusterClassPlots')}>Clustering And Classification Plots</span>
+        <span className="nav-link" onClick={() => handleClick('DataExploration')}>Data Exploration</span>
       </nav>
       <Routes>
         <Route path='/' element={<DataOverviewPlots images={images} />} />
         <Route path='/ClusterEvalPlots' element={<ClusterEvalPlots images={images} />}/>
         <Route path='/ClusterClassPlots' element={<ClusterClassPlots images={images} />} />
+        <Route path='/DataExploration' element={<DataExploration images={images} />} />
       </Routes>
     </div>
   );

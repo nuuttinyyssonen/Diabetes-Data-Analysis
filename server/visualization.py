@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import io
 import base64
 import threading
+import seaborn as sns
 
 plot_lock = threading.Lock()
 
@@ -88,6 +89,36 @@ def plot_knn(accuracies):
         plt.title("KNN Accuracy for different k values")
         plt.xlabel("k (Number of Neighbors)")
         plt.ylabel("Accuracy")
+        plt.tight_layout()
+        buf = io.BytesIO()
+        plt.savefig(buf, format='png')
+        plt.close()
+        buf.seek(0)
+        image_base64 = base64.b64encode(buf.read()).decode('utf-8')
+        return image_base64
+    
+def plot_heatmap(ct):
+    with plot_lock:
+        plt.figure(figsize=(6,4))
+        sns.heatmap(ct, annot=True, fmt='d', cmap='Blues')
+        plt.title('Cluster Assignments vs. Outcome Variable')
+        plt.xlabel(ct.columns.name or "Actual Outcome")
+        plt.ylabel(ct.index.name or "Cluster") 
+        buf = io.BytesIO()
+        plt.savefig(buf, format='png')
+        plt.close()
+        buf.seek(0)
+        image_base64 = base64.b64encode(buf.read()).decode('utf-8')
+        return image_base64
+    
+def plot_correlation_heatmap(df):
+    with plot_lock:
+        # Drop non-feature columns if needed (e.g., 'Outcome')
+        feature_df = df.drop(columns=['Outcome'], errors='ignore')
+        corr = feature_df.corr()
+        plt.figure(figsize=(8, 6))
+        sns.heatmap(corr, annot=True, fmt=".2f", cmap='coolwarm', square=True)
+        plt.title('Correlation Heatmap of Input Variables')
         plt.tight_layout()
         buf = io.BytesIO()
         plt.savefig(buf, format='png')
