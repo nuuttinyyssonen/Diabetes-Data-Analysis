@@ -1,5 +1,7 @@
-
-const DataExploration = ({ images }) => {
+import usePlots from '../hooks/usePlots';
+const DataExploration = () => {
+    const plotKeys = ['correlationHeatMap', 'outcomeDistribution'];
+    const images = usePlots(plotKeys);
     return (
         <div className="container">
             <div className="plot-box">

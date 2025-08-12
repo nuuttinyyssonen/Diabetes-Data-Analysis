@@ -1,5 +1,8 @@
 import '../App.css'
-const ClusterClassPlots = ({ images }) => {
+import usePlots from '../hooks/usePlots';
+const ClusterClassPlots = () => {
+  const plotKeys = ["kmeansPlot", "clusterOutcomeHeatmap", "KNN"];
+  const images = usePlots(plotKeys);
     return (
         <div className='Container'>
             <div className="plot-box">

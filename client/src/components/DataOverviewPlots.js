@@ -1,5 +1,8 @@
 import '../App.css';
-const DataOverviewPlots = ({ images }) => {
+import usePlots from '../hooks/usePlots';
+const DataOverviewPlots = () => {
+    const plotKeys = ['startingColumns', 'columnsWithoutZeros', 'columnsWithoutOutliers'];
+    const images = usePlots(plotKeys);
     return (
         <div className='Container'>
             <div className="plot-box">

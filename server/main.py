@@ -46,7 +46,7 @@ def get_starting_columns():
         print("Error in /startingColumns:", e)
         return JSONResponse(content={"error": str(e)}, status_code=500)
 
-@app.get('/zeroValuesRemoved')
+@app.get('/columnsWithoutZeros')
 def zeroValuesRemoved():
     try:
         df = dp.handle_zeros(orig_df.copy())
@@ -56,7 +56,7 @@ def zeroValuesRemoved():
         print("Error in /zeroValuesRemoved:", e)
         return JSONResponse(content={"error": str(e)}, status_code=500)
 
-@app.get('/outliersRemoved')
+@app.get('/columnsWithoutOutliers')
 def outliersRemoved():
     try:
         df = get_cleaned_df()
@@ -86,7 +86,7 @@ def outcomeDistribution():
         print("Error in /outcomeDistribution:", e)
         return JSONResponse(content={"error": str(e)}, status_code=500)
 
-@app.get('/elbowMethod')
+@app.get('/elbowMethodPlot')
 def get_elbow_method():
     try:
         df = get_cleaned_df()
@@ -95,10 +95,10 @@ def get_elbow_method():
         image_base64 = viz.plot_elbow(inertia)
         return JSONResponse(content={"image": image_base64})
     except Exception as e:
-        print("Error in /elbowMethod:", e)
+        print("Error in /elbowMethodPlot:", e)
         return JSONResponse(content={"error": str(e)}, status_code=500)
 
-@app.get('/silhouetteScores')
+@app.get('/silhouetteScoresPlot')
 def get_silhouette_scores():
     try:
         df = get_cleaned_df()
@@ -107,7 +107,7 @@ def get_silhouette_scores():
         image_base64 = viz.plot_silhouette(sil_scores)
         return JSONResponse(content={"image": image_base64})
     except Exception as e:
-        print("Error in /silhouetteScores")
+        print("Error in /silhouetteScoresPlot")
         return JSONResponse(content={"error": str(e)}, status_code=500)
 
 # KMeans

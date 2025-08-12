@@ -1,5 +1,8 @@
 import '../App.css'
-const ClusterEvalPlots = ({ images }) => {
+import usePlots from '../hooks/usePlots';
+const ClusterEvalPlots = () => {
+    const plotKeys = ["elbowMethodPlot", "silhouetteScoresPlot"];
+    const images = usePlots(plotKeys)
     return (
         <div className='Container'>
             <div className="plot-box">
