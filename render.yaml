@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: diabetes-data-analysis
+    runtime: python
+    startCommand: cd server && uvicorn main:app --host 0.0.0.0 --port 8080
+    buildCommand: pip install -r requirements.txt
+    envVars:
+      - key: ALLOWED_ORIGINS
+        scope: run
