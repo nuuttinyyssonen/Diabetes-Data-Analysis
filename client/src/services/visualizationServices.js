@@ -1,9 +1,10 @@
 import axios from 'axios';
 
-const baseUrl = process.env.REACT_APP_API_BASE_URL || "http://127.0.0.1:8000";
-
+// Use relative paths so it works both locally and on Render
+// Locally: http://localhost:8000/api → http://localhost:8000/api
+// On Render: https://your-service.onrender.com/api → https://your-service.onrender.com/api
 const getData = async (route) => {
-    const response = await axios.get(`${baseUrl}/${route}`);
+    const response = await axios.get(`/${route}`);
     return response.data;
 }
 
