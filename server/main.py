@@ -11,16 +11,21 @@ import classification as clas
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from pathlib import Path
+
+import os
 
 app = FastAPI()
 
-origins = [
-    "http://localhost:3000"
-]
+# Get allowed origins from environment, or use defaults for local development
+allowed_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:8000").split(",")
+# Strip whitespace from origins
+allowed_origins = [origin.strip() for origin in allowed_origins]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -167,4 +172,7 @@ def getKNN():
     except Exception as e:
         print("Error in KNN")
         return JSONResponse(content={'message': str(e)}, status_code=500)
-    
+
+# Serve static files (React frontend)
+static_dir = Path(__file__).parent / "static"
+app.mount("/", StaticFiles(directory=static_dir, html=True), name="static")
