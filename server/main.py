@@ -42,6 +42,12 @@ def get_cleaned_df():
 orig_df = pd.read_csv("diabetes.csv")
 print(orig_df.head())
 
+# Cache the cleaned dataframe at startup to avoid reprocessing on every request
+print("Pre-processing and caching cleaned dataframe...")
+cached_cleaned_df = get_cleaned_df()
+cached_scaled_data = dp.data_scale(cached_cleaned_df)
+print("Cache complete!")
+
 @app.get('/startingColumns')
 def get_starting_columns():
     try:
@@ -64,8 +70,8 @@ def zeroValuesRemoved():
 @app.get('/columnsWithoutOutliers')
 def outliersRemoved():
     try:
-        df = get_cleaned_df()
-        image_base64 = viz.plot_histograms(df, ['SkinThickness', 'BloodPressure', 'Insulin', 'BMI'])
+        # Use cached cleaned dataframe instead of reprocessing
+        image_base64 = viz.plot_histograms(cached_cleaned_df, ['SkinThickness', 'BloodPressure', 'Insulin', 'BMI'])
         return JSONResponse(content={"image": image_base64})
     except Exception as e:
         print("Error in /outliersRemoved:", e)
@@ -74,11 +80,11 @@ def outliersRemoved():
 @app.get('/correlationHeatMap')
 def correlationHeatMap():
     try:
-        df = get_cleaned_df()
-        image_base64 = viz.plot_correlation_heatmap(df)
+        # Use cached cleaned dataframe
+        image_base64 = viz.plot_correlation_heatmap(cached_cleaned_df)
         return JSONResponse(content={"image": image_base64})
     except Exception as e:
-        print("Error in /zeroValuesRemoved:", e)
+        print("Error in /correlationHeatMap:", e)
         return JSONResponse(content={"error": str(e)}, status_code=500)
 
 @app.get('/outcomeDistribution')
@@ -94,9 +100,8 @@ def outcomeDistribution():
 @app.get('/elbowMethodPlot')
 def get_elbow_method():
     try:
-        df = get_cleaned_df()
-        scaled_data = dp.data_scale(df)
-        inertia = clus.get_inertia(scaled_data)
+        # Use cached scaled data instead of reprocessing
+        inertia = clus.get_inertia(cached_scaled_data)
         image_base64 = viz.plot_elbow(inertia)
         return JSONResponse(content={"image": image_base64})
     except Exception as e:
@@ -106,38 +111,35 @@ def get_elbow_method():
 @app.get('/silhouetteScoresPlot')
 def get_silhouette_scores():
     try:
-        df = get_cleaned_df()
-        scaled_data = dp.data_scale(df)
-        sil_scores = clus.get_sil_scores(scaled_data)
+        # Use cached scaled data
+        sil_scores = clus.get_sil_scores(cached_scaled_data)
         image_base64 = viz.plot_silhouette(sil_scores)
         return JSONResponse(content={"image": image_base64})
     except Exception as e:
-        print("Error in /silhouetteScoresPlot")
+        print("Error in /silhouetteScoresPlot:", e)
         return JSONResponse(content={"error": str(e)}, status_code=500)
 
 # KMeans
 @app.get('/kmeansPlot')
 def getKmeansPlot():
     try:
-        df = get_cleaned_df()
-        scaled_data = dp.data_scale(df)
-        labels, centroids = clus.run_Kmeans(scaled_data)
+        # Use cached scaled data and cleaned dataframe
+        labels, centroids = clus.run_Kmeans(cached_scaled_data)
         pca = PCA(n_components=2)
-        reduced_data = pca.fit_transform(scaled_data)
+        reduced_data = pca.fit_transform(cached_scaled_data)
         centroids_2d = pca.transform(centroids)
         images_base64 = viz.plot_clusters(reduced_data, centroids_2d, labels)
         return JSONResponse(content={"image": images_base64})
     except Exception as e:
-        print("Error in /kmeansPlot")
+        print("Error in /kmeansPlot:", e)
         return JSONResponse(content={"error": str(e)}, status_code=500)
     
 @app.get('/clusterOutcomeHeatmap')
 def cluster_outcome_heatmap():
     try:
-        df = get_cleaned_df()
-        scaled_data = dp.data_scale(df)
-        labels, _ = clus.run_Kmeans(scaled_data)
-        df = df.copy()
+        # Use cached data
+        labels, _ = clus.run_Kmeans(cached_scaled_data)
+        df = cached_cleaned_df.copy()
         df['Cluster'] = labels + 1
         ct = pd.crosstab(df['Cluster'], df['Outcome'], rownames=['Cluster'], colnames=['Actual Outcome'])
         image_base64 = viz.plot_heatmap(ct)
@@ -150,11 +152,10 @@ def cluster_outcome_heatmap():
 @app.get('/KNN')
 def getKNN():
     try:
-        df = get_cleaned_df()
-        X = df.drop(columns=['Outcome'])
-        y = df['Outcome']
-        X_scaled_data = dp.data_scale(df)
-        accuracies, X_train, X_test, y_train, y_test = clas.run_knn(X_scaled_data, y)
+        # Use cached cleaned dataframe and scaled data
+        X = cached_cleaned_df.drop(columns=['Outcome'])
+        y = cached_cleaned_df['Outcome']
+        accuracies, X_train, X_test, y_train, y_test = clas.run_knn(cached_scaled_data, y)
 
         # Training final model with best k
         best_k = 1 + accuracies.index(max(accuracies))
@@ -170,7 +171,7 @@ def getKNN():
             'confusion_matrix': cm_image_base64
         })
     except Exception as e:
-        print("Error in KNN")
+        print("Error in KNN:", e)
         return JSONResponse(content={'message': str(e)}, status_code=500)
 
 # Serve static files (React frontend)
