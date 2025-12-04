@@ -2,8 +2,10 @@ services:
   - type: web
     name: diabetes-data-analysis
     runtime: python
-    startCommand: cd server && uvicorn main:app --host 0.0.0.0 --port 8080
-    buildCommand: pip install -r requirements.txt
+  startCommand: cd server && uvicorn main:app --host 0.0.0.0 --port $PORT
+  buildCommand: pip install -r requirements.txt
+  # Optional health check: Render will poll this path to verify the service is healthy
+  healthCheckPath: /
     envVars:
       - key: ALLOWED_ORIGINS
         scope: run
